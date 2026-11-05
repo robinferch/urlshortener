@@ -74,7 +74,7 @@ jobs:
           cache-to: type=gha,mode=max
       # Artifact attestations need a public repo (or GitHub Enterprise Cloud for private ones).
       - if: ${{ !github.event.repository.private }}
-        uses: actions/attest-build-provenance@v3
+        uses: actions/attest-build-provenance@v4
         with:
           subject-name: ghcr.io/${{ github.repository }}
           subject-digest: ${{ steps.push.outputs.digest }}
