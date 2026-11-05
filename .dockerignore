@@ -1,0 +1,8 @@
+.git
+.github
+.playwright-mcp
+web/node_modules
+web/dist
+dist
+*.md
+!README.md

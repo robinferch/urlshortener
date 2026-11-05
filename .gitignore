@@ -1,0 +1,4 @@
+/dist/
+/urlshortener
+.playwright-mcp/
+.env
