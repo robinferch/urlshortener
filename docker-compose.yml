@@ -1,0 +1,31 @@
+# Quick start: docker compose up -d, then open http://localhost:8080
+services:
+  app:
+    image: ghcr.io/robinferch/urlshortener:latest
+    build: .
+    restart: unless-stopped
+    # Loopback only: put Caddy/nginx in front for public access (see deploy/Caddyfile).
+    ports: ["127.0.0.1:8080:8080"]
+    environment:
+      DATABASE_URL: postgres://shortener:shortener@db:5432/shortener?sslmode=disable
+      APP_URL: http://localhost:8080
+      # Behind Caddy/nginx (see deploy/Caddyfile): TRUST_PROXY: "true"
+      # OIDC_ISSUER: https://auth.example.com/realms/main
+      # OIDC_CLIENT_ID: shortener
+      # OIDC_CLIENT_SECRET: change-me
+    depends_on:
+      db: { condition: service_healthy }
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: shortener
+      POSTGRES_PASSWORD: shortener
+      POSTGRES_DB: shortener
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "shortener"]
+      interval: 5s
+      retries: 10
+volumes:
+  pgdata:

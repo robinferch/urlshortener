@@ -1,0 +1,35 @@
+version: 2
+project_name: urlshortener
+
+before:
+  hooks:
+    - npm --prefix web ci
+    - npm --prefix web run build
+
+builds:
+  - env: [CGO_ENABLED=0]
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags: ["-s -w -X main.version={{ .Version }}"]
+
+archives:
+  - formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files: [README.md, LICENSE*]
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  use: github
+  sort: asc
+  filters:
+    exclude: ["^docs:", "^test:", "^chore:", "^ci:"]
+
+release:
+  prerelease: auto # v1.2.0-rc.1 etc. become GitHub pre-releases and never "latest"
+  footer: |
+    **Docker image:** `ghcr.io/robinferch/urlshortener:{{ .Version }}` (linux/amd64, linux/arm64)

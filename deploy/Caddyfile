@@ -1,0 +1,32 @@
+# Caddy in front of urlshortener, with automatic HTTPS for every short domain.
+# App settings: APP_URL=https://links.example.com TRUST_PROXY=true (PROXY_HOPS=1)
+# Replace app:8080 with the app's address (e.g. 127.0.0.1:8080 outside Docker).
+{
+	email you@example.com
+	# Certificates for short domains are issued on first request, but only for hosts
+	# the app confirms (the admin host or a domain added in the UI).
+	on_demand_tls {
+		ask http://app:8080/.well-known/urlshortener/tls-check
+	}
+}
+
+# Visitors could otherwise fake their country via CF-IPCountry. Remove the `import no_cf`
+# lines only if Caddy sits behind Cloudflare, which sets the real header.
+(no_cf) {
+	request_header -CF-IPCountry
+}
+
+# Admin UI and API (must match APP_URL).
+links.example.com {
+	import no_cf
+	reverse_proxy app:8080
+}
+
+# Every short domain. Caddy keeps the original Host header, which the app routes on.
+https:// {
+	tls {
+		on_demand
+	}
+	import no_cf
+	reverse_proxy app:8080
+}
